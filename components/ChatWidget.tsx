@@ -74,13 +74,14 @@ export default function ChatWidget() {
     setAuditAnswers([]);
   }
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setOpen(true);
-      setAutoOpened(true);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
+  // Disabled auto-open - chat opens only when user clicks
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setOpen(true);
+  //     setAutoOpened(true);
+  //   }, 3000);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   useEffect(() => {
     if (open && chatRef.current) {
@@ -437,7 +438,7 @@ export default function ChatWidget() {
                     }}
                   >
                     <input
-                      className="flex-1 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 placeholder-slate-500 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200"
+                      className="flex-1 min-w-0 rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 placeholder-slate-500 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200"
                       placeholder="Type your message…"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
@@ -445,7 +446,7 @@ export default function ChatWidget() {
                     />
                     <button
                       type="submit"
-                      className="rounded-xl bg-emerald-600 px-5 py-3 text-base font-bold text-white shadow-md shadow-emerald-500/30 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="shrink-0 rounded-xl bg-emerald-600 px-4 py-3 text-base font-bold text-white shadow-md shadow-emerald-500/30 transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={chatDisabled || !input.trim()}
                     >
                       Send
