@@ -1,6 +1,6 @@
 import CTA from "@/components/CTA";
 import ChatWidget from "@/components/ChatWidget";
-import VoiceButton from "@/components/VoiceButton";
+// import VoiceButton from "@/components/VoiceButton";
 import Features from "@/components/Features";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
@@ -80,7 +80,7 @@ export default function Home() {
       <Ownership />
       <CTA />
       <ChatWidget />
-      <VoiceButton />
+      {/* <VoiceButton /> */}
     </main>
   );
 }

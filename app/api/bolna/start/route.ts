@@ -22,10 +22,15 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { userName } = body;
+    const { userName, phoneNumber } = body;
+
+    // Bolna requires a phone number for the call recipient
+    // This can be a placeholder for web-based calls
+    const recipientPhone = phoneNumber || "+1000000000";
 
     const bolnaPayload = {
       agent_id: agentId,
+      recipient_phone_number: recipientPhone,
       user_data: {
         user_name: userName || "Guest",
         timestamp: new Date().toISOString(),
