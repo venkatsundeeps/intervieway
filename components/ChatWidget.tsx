@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageCircle, RefreshCw, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ChatMessage = {
   id: string;
@@ -33,7 +33,9 @@ function uid() {
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([{ id: uid(), role: "assistant", content: GREETING }]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: uid(), role: "assistant", content: GREETING },
+  ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -91,7 +93,11 @@ export default function ChatWidget() {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const userMessage: ChatMessage = { id: uid(), role: "user", content: trimmed };
+    const userMessage: ChatMessage = {
+      id: uid(),
+      role: "user",
+      content: trimmed,
+    };
     const nextMessages: ChatMessage[] = [...messages, userMessage];
     setMessages(nextMessages);
     setInput("");
@@ -110,7 +116,9 @@ export default function ChatWidget() {
         const bot: ChatMessage = {
           id: uid(),
           role: "assistant",
-          content: `${progress}\n\nQuestion ${nextStep + 1} of ${total}:\n${AUDIT_QUESTIONS[nextStep]}`,
+          content: `${progress}\n\nQuestion ${nextStep + 1} of ${total}:\n${
+            AUDIT_QUESTIONS[nextStep]
+          }`,
         };
         setMessages((prev) => [...prev, bot]);
         setAuditStep(nextStep);
@@ -120,17 +128,32 @@ export default function ChatWidget() {
         const websiteText = (website || "").toLowerCase();
         const followText = (followups || "").toLowerCase();
         let auditScore: "Good" | "Average" | "Needs Improvement" = "Average";
-        if (websiteText.includes("yes") && !followText.includes("hard") && !followText.includes("slow")) {
+        if (
+          websiteText.includes("yes") &&
+          !followText.includes("hard") &&
+          !followText.includes("slow")
+        ) {
           auditScore = "Good";
-        } else if (websiteText.includes("no") || websiteText.includes("not") || followText.includes("late") || followText.includes("forget")) {
+        } else if (
+          websiteText.includes("no") ||
+          websiteText.includes("not") ||
+          followText.includes("late") ||
+          followText.includes("forget")
+        ) {
           auditScore = "Needs Improvement";
         }
 
         const summaryLines = [
           `• You run a ${business || "growing"} business.`,
-          `• Customers mostly reach you via ${contact || "your current channels"}.`,
+          `• Customers mostly reach you via ${
+            contact || "your current channels"
+          }.`,
           website
-            ? `• Website enquiries are ${website.toLowerCase().includes("yes") ? "there but could grow" : "limited today"}.`
+            ? `• Website enquiries are ${
+                website.toLowerCase().includes("yes")
+                  ? "there but could grow"
+                  : "limited today"
+              }.`
             : "• Website enquiries are not a strong source yet.",
           `• Follow-ups feel ${followups || "like they could be smoother"}.`,
           "• One clear opportunity: a simple chat assistant on your website can catch missed visitors and send you more enquiries.",
@@ -159,7 +182,12 @@ export default function ChatWidget() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages.map(({ role, content }) => ({ role, content })) }),
+        body: JSON.stringify({
+          messages: nextMessages.map(({ role, content }) => ({
+            role,
+            content,
+          })),
+        }),
       });
 
       if (!res.ok) {
@@ -171,9 +199,15 @@ export default function ChatWidget() {
         data.reply?.trim() ||
         "Got it — that helps. Quick one 🙂: tell me a bit more, in your own words.";
 
-      setMessages((prev) => [...prev, { id: uid(), role: "assistant", content: reply }]);
+      setMessages((prev) => [
+        ...prev,
+        { id: uid(), role: "assistant", content: reply },
+      ]);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Something went wrong. Please try again.";
+      const message =
+        e instanceof Error
+          ? e.message
+          : "Something went wrong. Please try again.";
       setError(message);
       setMessages((prev) => [
         ...prev,
@@ -190,7 +224,13 @@ export default function ChatWidget() {
 
   async function handleLeadSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!leadName.trim() || !leadEmail.trim() || phase === "submitting" || messages.length === 0) return;
+    if (
+      !leadName.trim() ||
+      !leadEmail.trim() ||
+      phase === "submitting" ||
+      messages.length === 0
+    )
+      return;
 
     setPhase("submitting");
     setError("");
@@ -202,9 +242,18 @@ export default function ChatWidget() {
     const websiteText = (answers[2] || "").toLowerCase();
     const followText = (answers[3] || "").toLowerCase();
     let auditScore: "Good" | "Average" | "Needs Improvement" = "Average";
-    if (websiteText.includes("yes") && !followText.includes("hard") && !followText.includes("slow")) {
+    if (
+      websiteText.includes("yes") &&
+      !followText.includes("hard") &&
+      !followText.includes("slow")
+    ) {
       auditScore = "Good";
-    } else if (websiteText.includes("no") || websiteText.includes("not") || followText.includes("late") || followText.includes("forget")) {
+    } else if (
+      websiteText.includes("no") ||
+      websiteText.includes("not") ||
+      followText.includes("late") ||
+      followText.includes("forget")
+    ) {
       auditScore = "Needs Improvement";
     }
 
@@ -247,7 +296,8 @@ export default function ChatWidget() {
       const successMessage: ChatMessage = {
         id: uid(),
         role: "assistant",
-        content: "All set! I've shared this with the team 👍\n\nYour details are shared only with the business owner.",
+        content:
+          "All set! I've shared this with the team 👍\n\nYour details are shared only with the business owner.",
       };
 
       setMessages((prev) => [...prev, successMessage]);
@@ -282,8 +332,12 @@ export default function ChatWidget() {
           <div className="flex h-[600px] w-[380px] max-w-[90vw] flex-col rounded-2xl border-2 border-slate-200 bg-white shadow-2xl sm:w-[420px]">
             <div className="flex shrink-0 items-center justify-between border-b-2 border-slate-100 bg-gradient-to-r from-emerald-50 to-white px-5 py-4">
               <div>
-                <p className="text-base font-bold text-slate-900">Intervieway Assistant</p>
-                <p className="text-sm text-slate-600">{autoOpened ? "Auto-opened to say hello" : "Online now"}</p>
+                <p className="text-base font-bold text-slate-900">
+                  Intervieway Assistant
+                </p>
+                <p className="text-sm text-slate-600">
+                  {autoOpened ? "Auto-opened to say hello" : "Online now"}
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <a
@@ -318,9 +372,18 @@ export default function ChatWidget() {
               </div>
             </div>
 
-            <div ref={chatRef} className="flex flex-1 flex-col gap-4 overflow-y-auto bg-gradient-to-b from-slate-50 to-white px-5 py-4" style={{ scrollBehavior: 'smooth' }}>
+            <div
+              ref={chatRef}
+              className="flex flex-1 flex-col gap-4 overflow-y-auto bg-gradient-to-b from-slate-50 to-white px-5 py-4"
+              style={{ scrollBehavior: "smooth" }}
+            >
               {messages.map((message) => (
-                <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div
+                  key={message.id}
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  }`}
+                >
                   <div
                     className={`max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-3 text-base leading-relaxed shadow-sm ${
                       message.role === "user"
@@ -391,10 +454,16 @@ export default function ChatWidget() {
                 </>
               )}
 
-              {(phase === "capture" || phase === "submitting" || phase === "done") && (
-                <form className="space-y-3 text-sm text-slate-800" onSubmit={handleLeadSubmit}>
+              {(phase === "capture" ||
+                phase === "submitting" ||
+                phase === "done") && (
+                <form
+                  className="space-y-3 text-sm text-slate-800"
+                  onSubmit={handleLeadSubmit}
+                >
                   <p className="text-sm text-slate-700 bg-emerald-50 border-2 border-emerald-200 rounded-xl px-4 py-3 leading-relaxed">
-                    Almost done — you&apos;re doing great 👍 I&apos;ll share this with the business owner so they can help you.
+                    Almost done — you&apos;re doing great 👍 I&apos;ll share
+                    this with the business owner so they can help you.
                   </p>
                   <div className="space-y-2">
                     <label className="block text-sm font-bold text-slate-900">
@@ -425,7 +494,10 @@ export default function ChatWidget() {
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-bold text-slate-900">
-                      Phone <span className="text-slate-500 font-normal">(optional)</span>
+                      Phone{" "}
+                      <span className="text-slate-500 font-normal">
+                        (optional)
+                      </span>
                     </label>
                     <input
                       className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200"
@@ -445,7 +517,9 @@ export default function ChatWidget() {
                       !leadEmail.trim()
                     }
                   >
-                    {phase === "submitting" ? "Sending..." : "Send to business owner"}
+                    {phase === "submitting"
+                      ? "Sending..."
+                      : "Send to business owner"}
                   </button>
                   <p className="text-xs text-slate-500 text-center leading-relaxed">
                     Your details are shared only with the business owner.
