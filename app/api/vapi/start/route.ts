@@ -14,7 +14,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (!assistantId) {
-      console.error("VAPI_ASSISTANT_ID is not configured in environment variables");
+      console.error(
+        "VAPI_ASSISTANT_ID is not configured in environment variables"
+      );
       return NextResponse.json(
         { error: "Voice assistant is not configured. Please contact support." },
         { status: 500 }
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(vapiPayload),
     });

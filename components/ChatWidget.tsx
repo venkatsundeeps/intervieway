@@ -1,7 +1,8 @@
 "use client";
 
-import { MessageCircle, Mic, RefreshCw, X } from "lucide-react";
+import { MessageCircle, Mic, PhoneOff, RefreshCw, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import Vapi from "@vapi-ai/web";
 
 type ChatMessage = {
   id: string;
@@ -44,36 +45,27 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
   const [voiceCallActive, setVoiceCallActive] = useState(false);
   const chatRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const vapiRef = useRef<Vapi | null>(null);
 
-  async function handleStartVoice() {
-    setPhase("voice");
-    setLoading(true);
-    setError("");
+  // Initialize VAPI instance and set up event listeners
+  useEffect(() => {
+    const publicApiKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_API_KEY;
 
-    try {
-      // Pass phoneNumber if available (from leadPhone or user input)
-      const requestBody: { phoneNumber?: string } = {};
-      if (leadPhone?.trim()) {
-        requestBody.phoneNumber = leadPhone.trim();
-      }
+    if (!publicApiKey) {
+      console.warn("VAPI public API key not configured");
+      return;
+    }
 
-      const res = await fetch("/api/vapi/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody),
-      });
+    // Initialize VAPI instance if not already initialized
+    if (!vapiRef.current) {
+      vapiRef.current = new Vapi(publicApiKey);
 
-      if (!res.ok) {
-        throw new Error("Could not start voice session.");
-      }
-
-      const data = await res.json();
-
-      if (data.sessionUrl) {
-        // Open VAPI session in new window/tab
-        window.open(data.sessionUrl, "_blank", "noopener,noreferrer");
+      // Set up event listeners
+      vapiRef.current.on("call-start", () => {
+        console.log("Call started");
         setVoiceCallActive(true);
-
+        setLoading(false);
+        
         // Show message about voice call
         const voiceMessage: ChatMessage = {
           id: uid(),
@@ -81,10 +73,80 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
           content:
             "Voice call started! 🎙️\n\nI'll ask you 3-4 quick questions (under 1 minute). After that, I'll ask for your name and contact details.\n\nSpeak naturally—I'm listening!",
         };
-        setMessages([voiceMessage]);
-      } else {
-        throw new Error("No session URL received");
+        setMessages((prev) => [...prev, voiceMessage]);
+      });
+
+      vapiRef.current.on("call-end", () => {
+        console.log("Call ended");
+        setVoiceCallActive(false);
+        // Switch to capture phase after call ends
+        setPhase((currentPhase) => {
+          if (currentPhase === "voice") {
+            return "capture";
+          }
+          return currentPhase;
+        });
+      });
+
+      vapiRef.current.on("message", (message: any) => {
+        if (message.type === "transcript") {
+          console.log(`${message.role}: ${message.transcript}`);
+          
+          // Add transcript to messages
+          const transcriptMessage: ChatMessage = {
+            id: uid(),
+            role: message.role === "user" ? "user" : "assistant",
+            content: message.transcript,
+          };
+          setMessages((prev) => [...prev, transcriptMessage]);
+        }
+      });
+    }
+
+    return () => {
+      // Cleanup: stop call if active when component unmounts
+      if (vapiRef.current) {
+        try {
+          vapiRef.current.stop();
+        } catch (e) {
+          // Ignore errors if call is not active
+        }
       }
+    };
+  }, []);
+
+  async function handleStartVoice() {
+    setPhase("voice");
+    setLoading(true);
+    setError("");
+
+    try {
+      const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID;
+
+      if (!assistantId) {
+        throw new Error("Voice assistant is not configured. Please contact support.");
+      }
+
+      // Ensure VAPI is initialized (should be done in useEffect, but check just in case)
+      if (!vapiRef.current) {
+        const publicApiKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_API_KEY;
+        if (!publicApiKey) {
+          throw new Error("Voice assistant is not configured. Please contact support.");
+        }
+        vapiRef.current = new Vapi(publicApiKey);
+      }
+
+      // Start voice conversation (web call - no phone number needed)
+      vapiRef.current.start(assistantId);
+      
+      // Show initial message
+      const voiceMessage: ChatMessage = {
+        id: uid(),
+        role: "assistant",
+        content:
+          "Starting voice call… 🎙️\n\nI'll ask you 3-4 quick questions (under 1 minute). After that, I'll ask for your name and contact details.\n\nSpeak naturally—I'm listening!",
+      };
+      setMessages([voiceMessage]);
     } catch (e: unknown) {
       const message =
         e instanceof Error
@@ -92,7 +154,6 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
           : "Something went wrong. Please try again.";
       setError(message);
       setPhase("choice");
-    } finally {
       setLoading(false);
     }
   }
@@ -167,6 +228,11 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
   }, [messages, phase]);
 
   function resetChat() {
+    // Stop active voice call if any
+    if (vapiRef.current && voiceCallActive) {
+      vapiRef.current.stop();
+    }
+    
     setMessages([]);
     setInput("");
     setError("");
@@ -180,15 +246,49 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
     setLoading(false);
   }
 
-  function handleTypeChoice() {
+  async function handleTypeChoice() {
     setPhase("chat");
-    const welcome: ChatMessage = {
-      id: uid(),
-      role: "assistant",
-      content:
-        "Hi! I'll ask a few easy questions to understand your business and see how Intervieway can help.",
-    };
-    setMessages([welcome]);
+    setLoading(true);
+    setError("");
+
+    try {
+      // Let AI generate the welcome message
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [],
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Could not reach the chatbot right now.");
+      }
+
+      const data = (await res.json()) as { reply?: string };
+      const welcomeMessage =
+        data.reply?.trim() ||
+        "Hi 👋 Looking for help or pricing? I can assist you in under 1 minute.";
+
+      const welcome: ChatMessage = {
+        id: uid(),
+        role: "assistant",
+        content: welcomeMessage,
+      };
+      setMessages([welcome]);
+    } catch (e: unknown) {
+      // Fallback to hardcoded message on error
+      const welcome: ChatMessage = {
+        id: uid(),
+        role: "assistant",
+        content:
+          "Hi 👋 Looking for help or pricing? I can assist you in under 1 minute.",
+      };
+      setMessages([welcome]);
+      setError("Could not connect. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   // Extract business information from conversation
@@ -288,6 +388,49 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
       }, 100);
     }
   }, [open, phase]);
+
+  // Auto-open chat when #chat anchor is clicked
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === "#chat" && !open) {
+        setOpen(true);
+      } else if (window.location.hash !== "#chat" && open) {
+        // If hash is removed while chat is open, don't close it
+        // Only close if user explicitly closes it
+      }
+    };
+
+    // Check on mount
+    if (window.location.hash === "#chat" && !open) {
+      setOpen(true);
+    }
+
+    // Listen for hash changes
+    window.addEventListener("hashchange", handleHashChange);
+    // Also check clicks on links with #chat
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a[href="#chat"]');
+      if (link && !open) {
+        e.preventDefault();
+        setOpen(true);
+        window.history.pushState(null, "", "#chat");
+        // Scroll to chat widget
+        setTimeout(() => {
+          document
+            .getElementById("chat")
+            ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 100);
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+      document.removeEventListener("click", handleClick);
+    };
+  }, [open]);
 
   async function sendMessage(text: string) {
     if (!text || loading || phase !== "chat") return;
@@ -401,7 +544,7 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
     e.preventDefault();
     if (
       !leadName.trim() ||
-      !leadEmail.trim() ||
+      (!leadEmail.trim() && !leadPhone.trim()) ||
       phase === "submitting" ||
       phase === "done"
     )
@@ -425,7 +568,7 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: leadName.trim(),
-          email: leadEmail.trim(),
+          email: leadEmail.trim() || undefined,
           phone: leadPhone.trim() || undefined,
           businessType: businessInfo.businessType || "",
           contactMethod: businessInfo.contactMethod || "",
@@ -472,7 +615,17 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
       >
         <button
           className="rounded-full bg-emerald-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 active:scale-95 touch-manipulation"
-          onClick={() => setOpen((prev) => !prev)}
+          onClick={() => {
+            if (open) {
+              setOpen(false);
+              // Clear hash to prevent reopening
+              if (window.location.hash === "#chat") {
+                window.history.replaceState(null, "", window.location.pathname);
+              }
+            } else {
+              setOpen(true);
+            }
+          }}
           aria-label={open ? "Close chat" : "Open chat"}
         >
           {open ? "Close" : "Chat"}
@@ -491,6 +644,23 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {voiceCallActive && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (vapiRef.current) {
+                        vapiRef.current.stop();
+                      }
+                      setVoiceCallActive(false);
+                      setPhase("capture");
+                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-rose-200 bg-rose-50 text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 active:scale-95 touch-manipulation sm:h-9 sm:w-9"
+                    aria-label="End call"
+                    title="End call"
+                  >
+                    <PhoneOff className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden />
+                  </button>
+                )}
                 <a
                   href="https://wa.me/916303011316"
                   target="_blank"
@@ -516,7 +686,17 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    // End call if active when closing
+                    if (voiceCallActive && vapiRef.current) {
+                      vapiRef.current.stop();
+                    }
+                    setOpen(false);
+                    // Clear hash to prevent reopening
+                    if (window.location.hash === "#chat") {
+                      window.history.replaceState(null, "", window.location.pathname);
+                    }
+                  }}
                   className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-slate-200 text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 active:scale-95 touch-manipulation sm:h-9 sm:w-9"
                   aria-label="Close chat"
                   title="Close chat"
@@ -647,23 +827,31 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
                   <p className="text-sm text-slate-600">
                     Preparing voice call…
                   </p>
+                  <p className="text-xs text-slate-500">
+                    Please allow microphone access when prompted.
+                  </p>
                 </div>
               )}
 
               {phase === "voice" && voiceCallActive && (
                 <div className="space-y-3 text-center">
                   <p className="text-sm font-semibold text-slate-900">
-                    Voice call is active in another window
+                    🎙️ Voice call is active
                   </p>
                   <p className="text-xs text-slate-600">
-                    After the call, you can share your contact details here.
+                    Speak naturally. The conversation transcript will appear here.
                   </p>
                   <button
                     type="button"
-                    onClick={() => setPhase("capture")}
-                    className="w-full rounded-xl bg-emerald-600 px-4 py-3.5 text-base font-bold text-white shadow-md shadow-emerald-500/30 transition hover:bg-emerald-500 active:scale-95 touch-manipulation"
+                    onClick={() => {
+                      if (vapiRef.current) {
+                        vapiRef.current.stop();
+                      }
+                      setPhase("capture");
+                    }}
+                    className="w-full rounded-xl bg-rose-600 px-4 py-3.5 text-base font-bold text-white shadow-md shadow-rose-500/30 transition hover:bg-rose-500 active:scale-95 touch-manipulation"
                   >
-                    I&apos;m done with the call
+                    End call and continue
                   </button>
                 </div>
               )}
@@ -677,8 +865,7 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
                   onSubmit={handleLeadSubmit}
                 >
                   <p className="text-sm text-slate-700 bg-emerald-50 border-2 border-emerald-200 rounded-xl px-4 py-3 leading-relaxed">
-                    I&apos;ll share this with the Intervieway team so we can
-                    help you better.
+                    Can I send this information to you on email or WhatsApp?
                   </p>
                   <div className="space-y-2">
                     <label className="block text-sm font-bold text-slate-900">
@@ -696,34 +883,26 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
                   </div>
                   <div className="space-y-2">
                     <label className="block text-sm font-bold text-slate-900">
-                      Email <span className="text-rose-600">*</span>
+                      Email or WhatsApp <span className="text-rose-600">*</span>
                     </label>
                     <input
                       className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200 touch-manipulation"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={leadEmail}
-                      onChange={(e) => setLeadEmail(e.target.value)}
+                      type="text"
+                      placeholder="your@email.com or your WhatsApp number"
+                      value={leadEmail || leadPhone}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value.includes("@")) {
+                          setLeadEmail(value);
+                          setLeadPhone("");
+                        } else {
+                          setLeadPhone(value);
+                          setLeadEmail("");
+                        }
+                      }}
                       required
                       disabled={phase === "submitting" || phase === "done"}
-                      autoComplete="email"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-sm font-bold text-slate-900">
-                      Phone{" "}
-                      <span className="text-slate-500 font-normal">
-                        (optional)
-                      </span>
-                    </label>
-                    <input
-                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3.5 text-base text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200 touch-manipulation"
-                      type="tel"
-                      placeholder="Your phone number"
-                      value={leadPhone}
-                      onChange={(e) => setLeadPhone(e.target.value)}
-                      disabled={phase === "submitting" || phase === "done"}
-                      autoComplete="tel"
+                      autoComplete="email tel"
                     />
                   </div>
                   <button
@@ -733,7 +912,7 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
                       phase === "submitting" ||
                       phase === "done" ||
                       !leadName.trim() ||
-                      !leadEmail.trim()
+                      (!leadEmail.trim() && !leadPhone.trim())
                     }
                   >
                     {phase === "submitting"
