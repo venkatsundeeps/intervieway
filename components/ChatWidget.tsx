@@ -262,10 +262,17 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
       });
 
       if (!res.ok) {
-        throw new Error("Could not reach the chatbot right now.");
+        const errorData = await res.json().catch(() => ({}));
+        const errorMessage = errorData.error || "Could not reach the chatbot right now.";
+        throw new Error(errorMessage);
       }
 
-      const data = (await res.json()) as { reply?: string };
+      const data = (await res.json()) as { reply?: string; error?: string };
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
       const welcomeMessage =
         data.reply?.trim() ||
         "Hi 👋 Looking for help or pricing? I can assist you in under 1 minute.";
@@ -277,6 +284,11 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
       };
       setMessages([welcome]);
     } catch (e: unknown) {
+      const errorMessage =
+        e instanceof Error
+          ? e.message
+          : "Could not connect. Please try again.";
+      
       // Fallback to hardcoded message on error
       const welcome: ChatMessage = {
         id: uid(),
@@ -285,7 +297,7 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
           "Hi 👋 Looking for help or pricing? I can assist you in under 1 minute.",
       };
       setMessages([welcome]);
-      setError("Could not connect. Please try again.");
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -463,10 +475,17 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
       });
 
       if (!res.ok) {
-        throw new Error("Could not reach the chatbot right now.");
+        const errorData = await res.json().catch(() => ({}));
+        const errorMessage = errorData.error || "Could not reach the chatbot right now.";
+        throw new Error(errorMessage);
       }
 
-      const data = (await res.json()) as { reply?: string };
+      const data = (await res.json()) as { reply?: string; error?: string };
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      
       const reply =
         data.reply?.trim() ||
         "Got it — that helps. Let me ask you another question.";
