@@ -3,10 +3,15 @@ export default function CTA() {
     <section className="rounded-3xl border border-emerald-100 bg-emerald-50 px-6 py-10 shadow-sm md:px-10">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Ready to see it?</p>
-          <h2 className="text-2xl font-semibold text-slate-900 md:text-3xl">Talk and understand how it works.</h2>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
+            Ready to see it?
+          </p>
+          <h2 className="text-2xl font-semibold text-slate-900 md:text-3xl">
+            Talk and understand how it works.
+          </h2>
           <p className="text-slate-700">
-            We'll set up your website, connect everything, and email you every lead. No subscriptions, no surprises.
+            We&apos;ll set up your website, connect everything, and email you
+            every lead. No subscriptions, no surprises.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
