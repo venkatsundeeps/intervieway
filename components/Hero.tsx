@@ -45,12 +45,10 @@ export default function Hero() {
           <h1 className="text-4xl font-bold leading-tight text-slate-900 md:text-5xl">
             Get More Enquiries From Your Website — Automatically
           </h1>
-          <p className="text-xl text-slate-700 md:text-2xl">
+          <p className="text-base text-slate-700 md:text-lg lg:text-xl">
             We set up a simple chat & voice assistant on your website that talks
-            to visitors and turns them into real leads — even when you We set up
-            a simple chat & voice assistant on your website that talks to
-            visitors and turns them into real leads — even when you`&apos;`re
-            busy. re busy.
+            to visitors and turns them into real leads — even when you&apos;re
+            busy.
           </p>
           <div className="flex flex-col gap-4">
             <a
