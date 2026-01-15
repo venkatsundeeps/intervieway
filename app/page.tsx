@@ -5,6 +5,7 @@ import Features from "@/components/Features";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
 import Ownership from "@/components/Ownership";
+import WhoThisIsFor from "@/components/WhoThisIsFor";
 
 export default function Home() {
   return (
@@ -18,25 +19,22 @@ export default function Home() {
       >
         <div className="space-y-3">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
-            Live chatbot experience
+            Try it yourself
           </p>
           <h2 className="text-2xl font-semibold text-slate-900 md:text-3xl">
             See how visitors will talk to you.
           </h2>
           <p className="text-slate-600 md:text-lg">
-            The floating widget opens automatically, greets visitors, asks up to
-            five simple questions, then collects a name and email. You can
-            switch between OpenAI and Gemini via environment settings—keys are
-            always yours.
+            The chat window opens automatically, greets visitors, asks simple questions, then collects contact details. Everything works on your own website.
           </p>
           <ul className="space-y-2 text-sm text-slate-700">
             <li className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />
-              Auto-open after a few seconds to invite a chat.
+              Opens automatically to invite a conversation.
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />
-              Guided, one-question-at-a-time flow with short replies.
+              One question at a time, in plain language.
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />
@@ -64,9 +62,9 @@ export default function Home() {
             <p className="text-base font-semibold text-slate-900">
               What you’ll see:
             </p>
-            <p>• Floating button on the bottom right (auto-opens to greet).</p>
+            <p>• Floating button on the bottom right (opens automatically).</p>
             <p>• Friendly, professional replies with no jargon.</p>
-            <p>• Up to five focused questions, then contact capture.</p>
+            <p>• Simple questions, then contact capture.</p>
             <p>• Every lead emailed to you—no extra dashboards.</p>
           </div>
           <div className="mt-4 rounded-xl border border-emerald-100 bg-white p-4 text-xs text-emerald-900">
@@ -77,6 +75,7 @@ export default function Home() {
       </section>
 
       <HowItWorks />
+      <WhoThisIsFor />
       <Ownership />
       <CTA />
       <ChatWidget />

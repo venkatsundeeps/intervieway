@@ -51,10 +51,16 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
     setError("");
 
     try {
+      // Pass phoneNumber if available (from leadPhone or user input)
+      const requestBody: { phoneNumber?: string } = {};
+      if (leadPhone?.trim()) {
+        requestBody.phoneNumber = leadPhone.trim();
+      }
+
       const res = await fetch("/api/vapi/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify(requestBody),
       });
 
       if (!res.ok) {

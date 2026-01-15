@@ -2,7 +2,7 @@ const ownershipItems = [
   { title: "Website", detail: "You fully own the website and domain." },
   { title: "Hosting", detail: "Host wherever you like. We set it up, you control it." },
   { title: "AI API Key", detail: "Use your own OpenAI or Gemini key. We never hardcode keys." },
-  { title: "Data", detail: "Chats and leads are yours. We don’t keep or sell your data." },
+  { title: "Data", detail: "Chats and leads are yours. We don't keep or sell your data." },
 ];
 
 const promises = [
@@ -18,7 +18,7 @@ export default function Ownership() {
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Ownership & Trust</p>
         <h2 className="text-2xl font-semibold text-slate-900 md:text-3xl">You own everything we set up.</h2>
         <p className="text-slate-600 md:text-lg">
-          Intervieway is a one-time setup partner. We build, configure, and then hand over the keys—literally.
+          Intervieway is a one-time setup partner. We build, configure, and then hand over everything—you fully own it.
         </p>
       </div>
 
@@ -45,4 +45,3 @@ export default function Ownership() {
     </section>
   );
 }
-

@@ -43,18 +43,17 @@ export default function Hero() {
             Intervieway
           </p>
           <h1 className="text-3xl font-semibold leading-tight text-slate-900 md:text-4xl">
-            Turn your website into a friendly assistant that captures leads automatically.
+            Turn website visitors into real customer enquiries using a simple AI chat — no tech skills needed.
           </h1>
           <p className="text-lg text-slate-600">
-            We set up your website, add an AI chatbot using <span className="font-semibold">your</span> own OpenAI or
-            Gemini key, and send every lead straight to your inbox. One-time setup, simple handover, no jargon.
+            One-time setup on your own website. No monthly fees. Works automatically to capture leads and send them straight to your inbox.
           </p>
           <div className="flex flex-wrap gap-3">
             <a
               href="#chat"
               className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
             >
-              Chat with AI Assistant
+              See if this is right for your business
             </a>
             <button
               onClick={handleLetsTalk}
@@ -80,8 +79,8 @@ export default function Hero() {
               🤝
             </span>
             <div>
-              <p className="text-sm font-semibold text-slate-900">Built for SMBs</p>
-              <p className="text-xs text-slate-600">Friendly, clear, no tech jargon</p>
+              <p className="text-sm font-semibold text-slate-900">Built for small businesses</p>
+              <p className="text-xs text-slate-600">Simple, clear, no tech jargon</p>
             </div>
           </div>
           <ul className="space-y-2 text-sm text-slate-700">
@@ -91,7 +90,7 @@ export default function Hero() {
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />
-              You keep the website, hosting, API keys, and data.
+              You fully own it — nothing is locked to us.
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-500" />

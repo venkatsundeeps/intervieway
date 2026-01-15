@@ -1,6 +1,6 @@
 const painPoints = [
-  "Visitors browse but don’t contact you.",
-  "Missed leads when you’re busy or offline.",
+  "Visitors browse but don't contact you.",
+  "Missed leads when you're busy or offline.",
   "Manual follow-ups that slip through cracks.",
   "No simple system to capture and reply fast.",
 ];
@@ -8,11 +8,11 @@ const painPoints = [
 const solutionSteps = [
   {
     title: "We build your website",
-    detail: "Clean, mobile-first pages that explain your service in plain language.",
+    detail: "Clean, mobile-friendly pages that explain your service in plain language.",
   },
   {
-    title: "We add your AI chatbot",
-    detail: "Uses your own OpenAI or Gemini key. Greets visitors, asks simple questions, and helps them act.",
+    title: "We add your AI chat",
+    detail: "Greets visitors, asks simple questions, and helps them share what they need.",
   },
   {
     title: "Leads go to your inbox",
@@ -27,7 +27,7 @@ export default function Features() {
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Why this matters</p>
         <h2 className="text-2xl font-semibold text-slate-900 md:text-3xl">Turn missed visitors into ready leads.</h2>
         <p className="text-slate-600 md:text-lg">
-          Intervieway is a one-time setup. You get a website and chatbot that speak simply, collect the right details, and
+          Intervieway is a one-time setup. You get a website and chat that speak simply, collect the right details, and
           hand everything to you.
         </p>
       </div>
@@ -59,4 +59,3 @@ export default function Features() {
     </section>
   );
 }
-

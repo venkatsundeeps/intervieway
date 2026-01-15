@@ -24,19 +24,27 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { phoneNumber } = body;
 
-    // VAPI call creation payload
-    const vapiPayload = {
+    // VAPI web call payload
+    // Web calls return a clientUrl for browser-based voice interaction
+    const vapiPayload: {
+      assistantId: string;
+      customer?: {
+        number?: string;
+        [key: string]: any;
+      };
+      [key: string]: any;
+    } = {
       assistantId: assistantId,
-      phoneNumberId: phoneNumber ? undefined : undefined, // For web-based calls, phoneNumberId is optional
-      customer: {
-        number: phoneNumber || undefined, // Optional for web calls
-      },
-      // Web-based call configuration
-      ...(phoneNumber ? {} : {
-        webhookUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/vapi/webhook`,
-      }),
     };
 
+    // Add customer number if provided (can be used for identification/context)
+    if (phoneNumber) {
+      vapiPayload.customer = {
+        number: phoneNumber,
+      };
+    }
+
+    // Use VAPI web call endpoint
     const vapiResponse = await fetch("https://api.vapi.ai/call", {
       method: "POST",
       headers: {
@@ -57,10 +65,22 @@ export async function POST(req: NextRequest) {
 
     const data = await vapiResponse.json();
 
+    // VAPI web call returns clientUrl for browser-based voice interaction
+    // This URL opens a web interface for the voice call
+    const sessionUrl = data.clientUrl || data.client?.url || data.url;
+
+    if (!sessionUrl) {
+      console.error("VAPI response missing clientUrl:", data);
+      return NextResponse.json(
+        { error: "Voice session created but no client URL received." },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       success: true,
       callId: data.id,
-      sessionUrl: data.clientUrl || data.webhookUrl,
+      sessionUrl: sessionUrl,
       message: "Voice session created successfully",
     });
   } catch (error) {
