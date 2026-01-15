@@ -24,3 +24,8 @@ a {
 .card {
   @apply rounded-3xl border border-slate-200 bg-white shadow-sm;
 }
+
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}

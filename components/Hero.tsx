@@ -1,4 +1,38 @@
+"use client";
+
+import { Mic } from "lucide-react";
+import { useEffect, useState } from "react";
+
 export default function Hero() {
+  const [chatOpen, setChatOpen] = useState(false);
+
+  useEffect(() => {
+    // Listen for chat widget state changes
+    const handleChatOpen = () => setChatOpen(true);
+    const handleChatClose = () => setChatOpen(false);
+    
+    window.addEventListener("chatWidgetOpened", handleChatOpen);
+    window.addEventListener("chatWidgetClosed", handleChatClose);
+    
+    return () => {
+      window.removeEventListener("chatWidgetOpened", handleChatOpen);
+      window.removeEventListener("chatWidgetClosed", handleChatClose);
+    };
+  }, []);
+
+  const handleLetsTalk = () => {
+    // Trigger chat widget to open with voice mode
+    const chatButton = document.getElementById("chat")?.querySelector("button");
+    if (chatButton && !chatOpen) {
+      chatButton.click();
+    }
+    
+    // Dispatch custom event to trigger voice mode
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("startVoiceMode"));
+    }, 100);
+  };
+
   return (
     <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white px-6 py-12 shadow-sm md:px-10 md:py-16">
       <div className="absolute left-10 top-10 h-20 w-20 rounded-full bg-emerald-100 blur-3xl" aria-hidden />
@@ -22,6 +56,13 @@ export default function Hero() {
             >
               Chat with AI Assistant
             </a>
+            <button
+              onClick={handleLetsTalk}
+              className="flex items-center gap-2 rounded-xl border-2 border-blue-300 bg-white px-5 py-3 text-sm font-semibold text-blue-700 shadow-md shadow-blue-500/20 transition hover:border-blue-400 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-200 active:scale-95 touch-manipulation"
+            >
+              <Mic className="h-4 w-4" />
+              🎙️ Let&apos;s Talk (30 seconds)
+            </button>
             <a
               href="#how-it-works"
               className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-emerald-200 hover:text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-200"
@@ -29,6 +70,9 @@ export default function Hero() {
               See How It Works
             </a>
           </div>
+          <p className="text-xs text-slate-500">
+            Prefer speaking instead of typing?
+          </p>
         </div>
         <div className="flex max-w-sm flex-col gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-5 shadow-inner">
           <div className="flex items-center gap-3">
@@ -62,4 +106,3 @@ export default function Hero() {
     </section>
   );
 }
-
