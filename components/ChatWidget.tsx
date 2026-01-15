@@ -632,7 +632,7 @@ export default function ChatWidget({ initialMode }: ChatWidgetProps = {}) {
         </button>
 
         {open && (
-          <div className="flex h-[calc(100vh-2rem)] w-[calc(100vw-2rem)] max-w-[420px] flex-col rounded-2xl border-2 border-slate-200 bg-white shadow-2xl sm:h-[600px] sm:w-[420px]">
+          <div className="flex h-[75vh] w-[calc(100vw-2rem)] max-w-[420px] flex-col rounded-2xl border-2 border-slate-200 bg-white shadow-2xl sm:h-[600px] sm:w-[420px]">
             {/* Header */}
             <div className="flex shrink-0 items-center justify-between border-b-2 border-slate-100 bg-gradient-to-r from-emerald-50 to-white px-4 py-3 sm:px-5 sm:py-4">
               <div>
